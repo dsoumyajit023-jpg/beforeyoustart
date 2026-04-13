@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeforeUstart — Know Before You Begin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #08080f;
+    --bg2: rgba(255,255,255,0.03);
+    --bg3: rgba(255,255,255,0.06);
+    --text: #f0eefc;
+    --muted: rgba(240,238,252,0.4);
+    --faint: rgba(240,238,252,0.18);
+    --accent: #9b7fff;
+    --accent-dim: rgba(155,127,255,0.15);
+    --accent-border: rgba(155,127,255,0.3);
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; }
+
+  /* PAGE 1 */
+  #page1 { flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .p1-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 700px 500px at 50% 40%, rgba(100,60,220,0.13) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 20% 80%, rgba(60,20,180,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 300px 400px at 80% 20%, rgba(180,100,255,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .p1-noise {
+    position: absolute; inset: 0; opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px; pointer-events: none;
+  }
+  .p1-content { position: relative; z-index: 2; text-align: center; padding: 40px 24px; }
+  .p1-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin-bottom: 32px; opacity: 0; animation: fadeUp 0.8s 0.3s ease both; }
+  .brand-wrap { overflow: hidden; margin-bottom: 24px; }
+  .brand-name { font-family: 'DM Serif Display', serif; font-size: clamp(56px, 12vw, 108px); font-weight: 400; color: var(--text); letter-spacing: -2px; line-height: 1; display: inline-block; white-space: nowrap; }
+  .brand-name .char { display: inline-block; opacity: 0; transform: translateY(20px); transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1); }
+  .brand-name .char.visible { opacity: 1; transform: translateY(0); }
+  .p1-tagline { font-size: clamp(14px, 2vw, 17px); color: var(--muted); font-weight: 300; letter-spacing: 0.3px; line-height: 1.6; max-width: 360px; margin: 0 auto 48px; opacity: 0; animation: fadeUp 0.8s 1.6s ease both; }
+  .p1-btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 36px; background: transparent; border: 0.5px solid rgba(155,127,255,0.4); color: rgba(155,127,255,0.9); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 400; border-radius: 100px; cursor: pointer; opacity: 0; animation: fadeUp 0.8s 1.9s ease both; transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.15s; }
+  .p1-btn:hover { background: rgba(155,127,255,0.1); border-color: rgba(155,127,255,0.7); color: #c4b2ff; transform: translateY(-1px); }
+  .p1-btn svg { transition: transform 0.2s; }
+  .p1-btn:hover svg { transform: translateX(3px); }
+  .p1-scroll-hint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--faint); letter-spacing: 2px; text-transform: uppercase; opacity: 0; animation: fadeUp 1s 2.3s ease both; }
+
+  /* PAGE 2 */
+  #page2 { flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; position: relative; overflow: hidden; }
+  .p2-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 500px 400px at 60% 30%, rgba(80,40,200,0.08) 0%, transparent 70%); pointer-events: none; }
+  .p2-inner { position: relative; z-index: 1; width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
+  .p2-back { font-size: 13px; color: var(--faint); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s; width: fit-content; border: none; background: none; font-family: 'DM Sans', sans-serif; }
+  .p2-back:hover { color: var(--muted); }
+  .p2-label { font-size: 11px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; opacity: 0.7; margin-bottom: 10px; }
+  .p2-title { font-family: 'DM Serif Display', serif; font-size: clamp(26px, 5vw, 36px); font-weight: 400; line-height: 1.2; color: var(--text); letter-spacing: -0.5px; }
+  .p2-title em { font-style: italic; color: var(--accent); }
+  .question-box { width: 100%; min-height: 150px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 14px; color: var(--text); font-size: 16px; font-family: 'DM Sans', sans-serif; font-weight: 300; padding: 20px 22px; resize: none; outline: none; line-height: 1.65; transition: border-color 0.25s, background 0.25s; }
+  .question-box::placeholder { color: var(--faint); line-height: 1.65; }
+  .question-box:focus { border-color: var(--accent-border); background: rgba(155,127,255,0.04); }
+  .char-count { font-size: 12px; color: var(--faint); text-align: right; margin-top: -12px; }
+  .reality-btn { padding: 17px 32px; background: rgba(155,127,255,0.15); border: 0.5px solid rgba(155,127,255,0.35); color: #c4b2ff; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 400; border-radius: 100px; cursor: pointer; transition: background 0.25s, border-color 0.25s, transform 0.15s; }
+  .reality-btn:hover { background: rgba(155,127,255,0.25); border-color: rgba(155,127,255,0.6); transform: translateY(-1px); }
+  .reality-btn:active { transform: scale(0.98) translateY(0); }
+  .reality-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .p2-hint { font-size: 12px; color: var(--faint); text-align: center; line-height: 1.6; }
+
+  /* PAGE 3 */
+  #page3 { flex-direction: column; align-items: center; padding: 60px 24px 100px; background: var(--bg); position: relative; }
+  .p3-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 600px 300px at 50% 0%, rgba(80,40,200,0.07) 0%, transparent 60%); pointer-events: none; }
+  .p3-inner { position: relative; z-index: 1; width: 100%; max-width: 660px; display: flex; flex-direction: column; gap: 32px; }
+  .p3-back { font-size: 13px; color: var(--faint); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s; background: none; border: none; font-family: 'DM Sans', sans-serif; width: fit-content; }
+  .p3-back:hover { color: var(--muted); }
+  .question-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 16px; padding: 24px 28px; animation: fadeUp 0.5s ease both; }
+  .q-eyebrow { font-size: 10px; letter-spacing: 3px; color: var(--accent); opacity: 0.6; text-transform: uppercase; margin-bottom: 12px; }
+  .q-text { font-family: 'DM Serif Display', serif; font-size: clamp(18px, 3.5vw, 24px); font-weight: 400; font-style: italic; color: var(--text); line-height: 1.4; opacity: 0.9; }
+  .q-text::before { content: '\201C'; color: var(--accent); opacity: 0.5; margin-right: 2px; }
+  .q-text::after { content: '\201D'; color: var(--accent); opacity: 0.5; margin-left: 2px; }
+  .loading-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 60px 0; animation: fadeUp 0.4s ease both; }
+  .loading-label { font-size: 12px; color: var(--faint); letter-spacing: 2px; text-transform: uppercase; }
+  .thinking-dots { display: flex; gap: 8px; align-items: center; }
+  .tdot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); opacity: 0.3; animation: tdot 1.4s ease-in-out infinite; }
+  .tdot:nth-child(2) { animation-delay: 0.2s; }
+  .tdot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes tdot { 0%,80%,100%{opacity:0.2;transform:scale(0.75)} 40%{opacity:0.9;transform:scale(1)} }
+  .section-label { font-size: 10px; letter-spacing: 3px; color: var(--faint); text-transform: uppercase; margin-bottom: 14px; display: block; }
+  .challenges-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .challenge-item { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 13px; animation: fadeUp 0.5s ease both; transition: border-color 0.2s, background 0.2s; }
+  .challenge-item:hover { border-color: var(--border-hover); background: var(--bg3); }
+  .c-num { min-width: 24px; height: 24px; border-radius: 50%; background: var(--accent-dim); border: 0.5px solid var(--accent-border); color: var(--accent); font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; margin-top: 1px; flex-shrink: 0; }
+  .c-title { font-size: 14px; font-weight: 500; color: rgba(240,238,252,0.8); margin-bottom: 5px; }
+  .c-body { font-size: 14px; color: var(--muted); line-height: 1.65; font-weight: 300; }
+  .divider { height: 0.5px; background: var(--border); }
+  .mindset-card { background: rgba(155,127,255,0.06); border: 0.5px solid rgba(155,127,255,0.2); border-radius: 16px; padding: 24px 26px; animation: fadeUp 0.5s ease both; }
+  .mindset-card p { font-size: 16px; color: rgba(240,238,252,0.72); line-height: 1.75; font-weight: 300; }
+  .p3-actions { display: flex; gap: 12px; flex-wrap: wrap; animation: fadeUp 0.5s ease both; }
+  .action-btn { flex: 1; min-width: 180px; padding: 15px 28px; background: transparent; border: 0.5px solid var(--border-hover); color: var(--muted); font-size: 14px; font-family: 'DM Sans', sans-serif; border-radius: 100px; cursor: pointer; transition: all 0.2s; font-weight: 400; text-align: center; }
+  .action-btn:hover { border-color: rgba(155,127,255,0.4); color: var(--accent); background: var(--accent-dim); }
+  .error-msg { color: rgba(255,130,130,0.7); font-size: 13px; text-align: center; padding: 40px 0; line-height: 1.8; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(155,127,255,0.2); border-radius: 2px; }
+  @media (max-width: 480px) { .p2-inner, .p3-inner { gap: 16px; } .question-box { min-height: 120px; } }
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<div id="page1" class="page active">
+  <div class="p1-bg"></div>
+  <div class="p1-noise"></div>
+  <div class="p1-content">
+    <div class="p1-eyebrow">A reality check tool</div>
+    <div class="brand-wrap">
+      <div class="brand-name" id="brandName"></div>
+    </div>
+    <p class="p1-tagline">Before you leap — know what you're actually jumping into. No sugarcoating.</p>
+    <button class="p1-btn" onclick="goTo('page2')">
+      Ask the real question
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+  <div class="p1-scroll-hint">honest answers only</div>
+</div>
+
+<!-- PAGE 2 -->
+<div id="page2" class="page">
+  <div class="p2-bg"></div>
+  <div class="p2-inner">
+    <button class="p2-back" onclick="goTo('page1')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M11 7H3M6 3l-4 4 4 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      back
+    </button>
+    <div>
+      <div class="p2-label">reality check</div>
+      <h2 class="p2-title">What are you thinking of <em>starting?</em></h2>
+    </div>
+    <textarea
+      class="question-box"
+      id="userQuestion"
+      placeholder="e.g. I want to start a YouTube channel. What problems will I face?&#10;&#10;Be specific. The more real your question, the more real your answer."
+      oninput="updateCount(this)"
+      maxlength="600"
+    ></textarea>
+    <div class="char-count" id="charCount">0 / 600</div>
+    <button class="reality-btn" id="realityBtn" onclick="startCheck()">Start reality check →</button>
+    <p class="p2-hint">Powered by AI. Honest by design. 100% free.</p>
+  </div>
+</div>
+
+<!-- PAGE 3 -->
+<div id="page3" class="page">
+  <div class="p3-bg"></div>
+  <div class="p3-inner" id="p3Inner"></div>
+</div>
+
+<script>
+  const API_URL = "/api/ask";
+
+  function goTo(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function updateCount(el) {
+    document.getElementById('charCount').textContent = el.value.length + ' / 600';
+  }
+
+  function esc(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function startCheck() {
+    const question = document.getElementById('userQuestion').value.trim();
+    if (!question) {
+      const box = document.getElementById('userQuestion');
+      box.style.borderColor = 'rgba(255,100,100,0.5)';
+      setTimeout(() => box.style.borderColor = '', 1500);
+      return;
+    }
+
+    document.getElementById('realityBtn').disabled = true;
+
+    const p3 = document.getElementById('p3Inner');
+    p3.innerHTML = `
+      <button class="p3-back" onclick="askAgain()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M11 7H3M6 3l-4 4 4 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ask something else
+      </button>
+      <div class="question-card">
+        <div class="q-eyebrow">your question</div>
+        <div class="q-text">${esc(question)}</div>
+      </div>
+      <div class="loading-wrap" id="loadingWrap">
+        <div class="thinking-dots">
+          <div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
+        </div>
+        <div class="loading-label">thinking honestly...</div>
+      </div>`;
+
+    goTo('page3');
+
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question })
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'Server error ' + resp.status);
+      }
+
+      const data = await resp.json();
+      renderAnswer(data);
+
+    } catch (e) {
+      const lw = document.getElementById('loadingWrap');
+      if (lw) lw.innerHTML = `
+        <div class="error-msg">
+          Something went wrong.<br>
+          <span style="opacity:0.5;font-size:12px;">${esc(e.message)}</span><br><br>
+          <button class="action-btn" style="max-width:200px;margin:0 auto;" onclick="askAgain()">Try again</button>
+        </div>`;
+    } finally {
+      document.getElementById('realityBtn').disabled = false;
+    }
+  }
+
+  function renderAnswer(data) {
+    const lw = document.getElementById('loadingWrap');
+    if (lw) lw.remove();
+
+    const items = (data.challenges || []).map((c, i) => `
+      <li class="challenge-item" style="animation-delay:${i * 0.06 + 0.1}s">
+        <div class="c-num">${i + 1}</div>
+        <div>
+          <div class="c-title">${esc(c.title)}</div>
+          <div class="c-body">${esc(c.detail)}</div>
+        </div>
+      </li>`).join('');
+
+    document.getElementById('p3Inner').insertAdjacentHTML('beforeend', `
+      <div style="animation:fadeUp 0.4s ease both">
+        <span class="section-label">challenges you'll actually face</span>
+        <ul class="challenges-list">${items}</ul>
+      </div>
+      <div class="divider"></div>
+      <div style="animation:fadeUp 0.4s 0.5s ease both">
+        <span class="section-label">the mindset you need</span>
+        <div class="mindset-card" style="animation-delay:0.55s">
+          <p>${esc(data.mindset)}</p>
+        </div>
+      </div>
+      <div class="p3-actions" style="animation-delay:0.7s">
+        <button class="action-btn" onclick="askAgain()">← Ask something else</button>
+        <button class="action-btn" onclick="goTo('page1')">Back to home</button>
+      </div>`);
+  }
+
+  function askAgain() {
+    document.getElementById('userQuestion').value = '';
+    document.getElementById('charCount').textContent = '0 / 600';
+    document.getElementById('p3Inner').innerHTML = '';
+    goTo('page2');
+  }
+
+  (function () {
+    const el = document.getElementById('brandName');
+    const text = 'BeforeUstart';
+    el.innerHTML = text.split('').map((ch, i) =>
+      `<span class="char" style="transition-delay:${i * 0.055 + 0.5}s">${ch}</span>`
+    ).join('');
+    requestAnimationFrame(() => {
+      setTimeout(() => el.querySelectorAll('.char').forEach(c => c.classList.add('visible')), 50);
+    });
+  })();
+</script>
+</body>
+</html>
