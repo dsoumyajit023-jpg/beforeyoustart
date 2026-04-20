@@ -1,18 +1,87 @@
+const ALLOWED_DEPTHS = new Set(["quick", "standard", "deep"]);
+const MAX_QUESTION_LENGTH = 600;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 5;
+
+const rateLimitMap = new Map();
+
+function getRateLimit(ip) {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip) || { count: 0, windowStart: now };
+  if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    entry.count = 0;
+    entry.windowStart = now;
+  }
+  entry.count += 1;
+  rateLimitMap.get(ip) ? Object.assign(rateLimitMap.get(ip), entry) : rateLimitMap.set(ip, entry);
+  if (rateLimitMap.size > 10_000) {
+    const oldest = [...rateLimitMap.entries()]
+      .sort((a, b) => a[1].windowStart - b[1].windowStart)
+      .slice(0, 1000);
+    oldest.forEach(([k]) => rateLimitMap.delete(k));
+  }
+  return entry.count;
+}
+
+function sanitiseQuestion(raw) {
+  return raw
+    .trim()
+    .slice(0, MAX_QUESTION_LENGTH)
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, "");
+}
+
+function validateResponse(parsed) {
+  const VALID_CATEGORIES = new Set(["business", "creative", "tech", "health", "social", "learning", "other"]);
+  const VALID_SEVERITIES = new Set(["high", "medium", "low"]);
+  if (typeof parsed !== "object" || parsed === null) return false;
+  if (!VALID_CATEGORIES.has(parsed.category)) return false;
+  if (typeof parsed.categoryEmoji !== "string") return false;
+  if (typeof parsed.realityScore !== "number" || parsed.realityScore < 10 || parsed.realityScore > 90) return false;
+  if (typeof parsed.scoreLabel !== "string") return false;
+  if (typeof parsed.verdict !== "string") return false;
+  if (!Array.isArray(parsed.challenges)) return false;
+  for (const c of parsed.challenges) {
+    if (typeof c.title !== "string" || typeof c.detail !== "string") return false;
+    if (!VALID_SEVERITIES.has(c.severity)) return false;
+  }
+  if (!Array.isArray(parsed.opportunities)) return false;
+  if (typeof parsed.requirements !== "object" || parsed.requirements === null) return false;
+  if (!Array.isArray(parsed.plan)) return false;
+  if (typeof parsed.mindset !== "string") return false;
+  if (!Array.isArray(parsed.successFactors)) return false;
+  if (!Array.isArray(parsed.redFlags)) return false;
+  return true;
+}
+
 export default async function handler(req, res) {
-  // Only allow POST
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed", status: 405 });
   }
 
-  const { question, depth } = req.body;
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    "unknown";
 
-  if (!question || typeof question !== "string" || question.trim().length < 5) {
-    return res.status(400).json({ error: "A valid question is required." });
+  const requestCount = getRateLimit(ip);
+  if (requestCount > RATE_LIMIT_MAX) {
+    res.setHeader("Retry-After", "60");
+    return res.status(429).json({ error: "Too many requests. Please wait a minute and try again.", status: 429 });
   }
+
+  const { question: rawQuestion, depth: rawDepth } = req.body || {};
+
+  if (!rawQuestion || typeof rawQuestion !== "string" || rawQuestion.trim().length < 5) {
+    return res.status(400).json({ error: "A valid question is required (minimum 5 characters).", status: 400 });
+  }
+
+  const depth = ALLOWED_DEPTHS.has(rawDepth) ? rawDepth : "standard";
+  const question = sanitiseQuestion(rawQuestion);
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: "API key not configured on the server." });
+    return res.status(500).json({ error: "Service temporarily unavailable.", status: 500 });
   }
 
   const DEPTH_PROMPT = {
@@ -21,9 +90,9 @@ export default async function handler(req, res) {
     deep: "Deep analysis: 7-8 challenges, 4-5 opportunities, detailed plan and requirements.",
   };
 
-  const depthInstruction = DEPTH_PROMPT[depth] || DEPTH_PROMPT.standard;
+  const depthInstruction = DEPTH_PROMPT[depth];
 
-  const prompt = `You are BeforeUstart — a brutally honest AI reality check tool. User wants to know about: "${question.trim()}"
+  const prompt = `You are BeforeUstart — a brutally honest AI reality check tool. User wants to know about: """${question}"""
 
 ${depthInstruction}
 
@@ -65,9 +134,8 @@ Respond ONLY with a valid JSON object, no markdown, no backticks:
     });
 
     if (!anthropicRes.ok) {
-      const errBody = await anthropicRes.text();
-      console.error("Anthropic API error:", errBody);
-      return res.status(502).json({ error: "AI service error. Please try again." });
+      await anthropicRes.text();
+      return res.status(502).json({ error: "AI service error. Please try again.", status: 502 });
     }
 
     const data = await anthropicRes.json();
@@ -75,9 +143,12 @@ Respond ONLY with a valid JSON object, no markdown, no backticks:
     const clean = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(clean);
 
+    if (!validateResponse(parsed)) {
+      return res.status(502).json({ error: "Unexpected response from AI. Please try again.", status: 502 });
+    }
+
     return res.status(200).json(parsed);
   } catch (err) {
-    console.error("Handler error:", err);
-    return res.status(500).json({ error: "Something went wrong. Please try again." });
+    return res.status(500).json({ error: "Something went wrong. Please try again.", status: 500 });
   }
 }
